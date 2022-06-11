@@ -1,10 +1,11 @@
 --甲虫装機 エクサスタッグ
+--Inzektor Exa-Stag
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz summon
 	Xyz.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsRace,RACE_INSECT),5,2)
 	c:EnableReviveLimit()
-	--equip
+	--Equip 1 monster to itself
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_EQUIP)
@@ -12,15 +13,11 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1)
-	e1:SetCost(s.eqcost)
+	e1:SetCost(aux.dxmcostgen(1,1,nil))
 	e1:SetTarget(s.eqtg)
 	e1:SetOperation(s.eqop)
 	c:RegisterEffect(e1,false,REGISTER_FLAG_DETACH_XMAT)
 	aux.AddEREquipLimit(c,nil,function(ec,_,tp) return ec:IsControler(1-tp) end,s.equipop,e1)
-end
-function s.eqcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
-	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
 function s.eqfilter(c)
 	return c:IsLocation(LOCATION_MZONE) or c:IsType(TYPE_MONSTER) and not c:IsForbidden()
@@ -32,7 +29,14 @@ function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 	local g=Duel.SelectTarget(tp,s.eqfilter,tp,0,LOCATION_GRAVE+LOCATION_MZONE,1,1,nil)
 	if g:GetFirst():IsLocation(LOCATION_GRAVE) then
-		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
+		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,tp,0)
+	end
+end
+function s.eqop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	local tc=Duel.GetFirstTarget()
+	if tc:IsType(TYPE_MONSTER) and tc:IsControler(1-tp) then
+		s.equipop(c,e,tp,tc)
 	end
 end
 function s.equipop(c,e,tp,tc)
@@ -40,25 +44,19 @@ function s.equipop(c,e,tp,tc)
 	if tc:IsFaceup() then
 		local atk=tc:GetTextAttack()/2
 		if atk<0 then atk=0 end
-		local e2=Effect.CreateEffect(c)
-		e2:SetType(EFFECT_TYPE_EQUIP)
-		e2:SetCode(EFFECT_UPDATE_ATTACK)
-		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
-		e2:SetValue(atk)
-		tc:RegisterEffect(e2)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_EQUIP)
+		e1:SetCode(EFFECT_UPDATE_ATTACK)
+		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+		e1:SetValue(atk)
+		tc:RegisterEffect(e1)
 		local def=tc:GetTextDefense()/2
 		if def<0 then def=0 end
-		local e3=Effect.CreateEffect(c)
-		e3:SetType(EFFECT_TYPE_EQUIP)
-		e3:SetCode(EFFECT_UPDATE_DEFENSE)
-		e3:SetReset(RESET_EVENT+RESETS_STANDARD)
-		e3:SetValue(def)
-		tc:RegisterEffect(e3)
+		local e2=Effect.CreateEffect(c)
+		e2:SetType(EFFECT_TYPE_EQUIP)
+		e2:SetCode(EFFECT_UPDATE_DEFENSE)
+		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
+		e2:SetValue(def)
+		tc:RegisterEffect(e2)
 	end
-end
-function s.eqop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	local tc=Duel.GetFirstTarget()
-	if not tc or not tc:IsType(TYPE_MONSTER) then return end
-	if not s.equipop(c,e,tp,tc) then return end
 end

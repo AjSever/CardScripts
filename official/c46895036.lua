@@ -1,10 +1,11 @@
 --ゴーストリック・デュラハン
+--Ghostrick Dullahan
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz summon
 	Xyz.AddProcedure(c,nil,1,2)
 	c:EnableReviveLimit()
-	--atk
+	--Gain 200 ATK per "Ghostrick" card
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -12,7 +13,7 @@ function s.initial_effect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetValue(s.atkval)
 	c:RegisterEffect(e1)
-	--atk down
+	--Halve ATK of the target
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetCategory(CATEGORY_ATKCHANGE)
@@ -27,7 +28,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.target)
 	e2:SetOperation(s.operation)
 	c:RegisterEffect(e2,false,REGISTER_FLAG_DETACH_XMAT)
-	--to hand
+	--Add 1 other "Ghostrick" card to the hand
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_TOHAND)
 	e3:SetDescription(aux.Stringid(id,1))
@@ -39,11 +40,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 s.listed_series={0x8d}
-function s.atkfilter(c)
-	return c:IsFaceup() and c:IsSetCard(0x8d)
-end
 function s.atkval(e,c)
-	return Duel.GetMatchingGroupCount(s.atkfilter,c:GetControler(),LOCATION_ONFIELD,0,nil)*200
+	return Duel.GetMatchingGroupCount(aux.FilterFaceupFunction(Card.IsSetCard,0x8d),c:GetControler(),LOCATION_ONFIELD,0,nil)*200
 end
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetCurrentPhase()~=PHASE_DAMAGE or not Duel.IsDamageCalculated()
@@ -77,11 +75,11 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,e:GetHandler()) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,1,e:GetHandler())
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,tp,0)
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) and tc:IsSetCard(0x8d) then
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,tc)
 	end

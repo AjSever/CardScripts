@@ -2,10 +2,10 @@
 --Number 43: Manipulator of Souls
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz Summon
 	Xyz.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsAttribute,ATTRIBUTE_DARK),2,3)
 	c:EnableReviveLimit()
-	--equip
+	--Equip 1 "Number" monster to itself
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_EQUIP)
@@ -13,12 +13,12 @@ function s.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1)
-	e1:SetCost(s.eqcost)
+	e1:SetCost(aux.dxmcostgen(1,1,nil))
 	e1:SetTarget(s.eqtg)
 	e1:SetOperation(s.eqop)
 	c:RegisterEffect(e1,false,REGISTER_FLAG_DETACH_XMAT)
 	aux.AddEREquipLimit(c,nil,s.eqval,aux.EquipByEffectAndLimitRegister,e1)
-	--indest
+	--Cannot be destroyed by battle
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -27,13 +27,14 @@ function s.initial_effect(c)
 	e2:SetCondition(s.indcon)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
+	--Cannot be destroyed by effects
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	c:RegisterEffect(e3)
-	--damage
+	--Increase ATK and inflict damage
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,1))
-	e4:SetCategory(CATEGORY_DAMAGE)
+	e4:SetCategory(CATEGORY_DAMAGE+CATEGORY_ATKCHANGE)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_RECOVER)
 	e4:SetRange(LOCATION_MZONE)
@@ -48,10 +49,6 @@ s.xyz_number=43
 function s.eqval(ec,c,tp)
 	return ec:IsControler(tp) and ec:IsSetCard(0x48)
 end
-function s.eqcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
-	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
-end
 function s.filter(c)
 	return c:IsSetCard(0x48) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
@@ -61,13 +58,13 @@ function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
-	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,tp,0)
+	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,1,tp,0)
 end
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) and tc:IsSetCard(0x48) then
 		aux.EquipByEffectAndLimitRegister(c,e,tp,tc)
 	end
 end

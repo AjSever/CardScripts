@@ -2,10 +2,10 @@
 --Number C6: Chronomaly Chaos Atlandis
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz summon
 	Xyz.AddProcedure(c,nil,7,3)
 	c:EnableReviveLimit()
-	--equip
+	--Equip 1 monster the opponent controls to this card
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_EQUIP)
@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetOperation(s.eqop)
 	c:RegisterEffect(e1)
 	aux.AddEREquipLimit(c,nil,function(ec,_,tp) return ec:IsControler(1-tp) end,s.equipop,e1)
-	--lp
+	--Make the opponent's LP become 100
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -36,35 +36,35 @@ function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsExistingTarget(Card.IsAbleToChangeControler,tp,0,LOCATION_MZONE,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 	local g=Duel.SelectTarget(tp,Card.IsAbleToChangeControler,tp,0,LOCATION_MZONE,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,1,tp,0)
 end
 function s.equipop(c,e,tp,tc)
 	if not aux.EquipByEffectAndLimitRegister(c,e,tp,tc,id) then return end
-	local e2=Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_EQUIP)
-	e2:SetCode(EFFECT_UPDATE_ATTACK)
-	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
-	e2:SetValue(1000)
-	tc:RegisterEffect(e2)
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_EQUIP)
+	e1:SetCode(EFFECT_UPDATE_ATTACK)
+	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+	e1:SetValue(1000)
+	tc:RegisterEffect(e1)
 end
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) and tc:IsControler(1-tp) then
 		s.equipop(c,e,tp,tc)
 	end
-	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetCode(EFFECT_CHANGE_DAMAGE)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e3:SetTargetRange(0,1)
-	e3:SetValue(0)
-	e3:SetReset(RESET_PHASE+PHASE_END)
-	Duel.RegisterEffect(e3,tp)
-	local e4=e3:Clone()
-	e4:SetCode(EFFECT_NO_EFFECT_DAMAGE)
-	e4:SetReset(RESET_PHASE+PHASE_END)
-	Duel.RegisterEffect(e4,tp)
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetCode(EFFECT_CHANGE_DAMAGE)
+	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e1:SetTargetRange(0,1)
+	e1:SetValue(0)
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	Duel.RegisterEffect(e1,tp)
+	local e2=e1:Clone()
+	e2:SetCode(EFFECT_NO_EFFECT_DAMAGE)
+	e2:SetReset(RESET_PHASE+PHASE_END)
+	Duel.RegisterEffect(e2,tp)
 end
 function s.lpcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetLP(1-tp)~=100 and e:GetHandler():GetOverlayGroup():IsExists(Card.IsCode,1,nil,9161357)

@@ -1,10 +1,11 @@
 --No.55 ゴゴゴゴライアス
+--Number 55: Gogogo Goliath
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz summon
 	Xyz.AddProcedure(c,nil,4,2)
 	c:EnableReviveLimit()
-	--search
+	--Add 1 EARTH monster from the GY to the hand
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -12,11 +13,11 @@ function s.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,id)
-	e1:SetCost(s.thcost)
+	e1:SetCost(aux.dxmcostgen(1,1,nil))
 	e1:SetTarget(s.thtg)
 	e1:SetOperation(s.thop)
 	c:RegisterEffect(e1,false,REGISTER_FLAG_DETACH_XMAT)
-	--def
+	--Increase DEF of monsters by 800
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
@@ -26,10 +27,6 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 s.xyz_number=55
-function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
-	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
-end
 function s.filter(c)
 	return c:IsRace(RACE_ROCK) and c:IsAttribute(ATTRIBUTE_EARTH) and c:GetLevel()==4 and c:IsAbleToHand()
 end
@@ -42,7 +39,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_ROCK) and tc:IsAttribute(ATTRIBUTE_EARTH) and tc:IsLevel(4) then
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,tc)
 	end

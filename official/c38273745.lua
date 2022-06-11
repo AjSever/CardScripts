@@ -1,10 +1,11 @@
 --ヴェルズ・ウロボロス
+--Evilswarm Ouroboros
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz summon
 	Xyz.AddProcedure(c,nil,4,3)
 	c:EnableReviveLimit()
-	--tohand
+	--Return target to the hand
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,1))
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -16,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.tg1)
 	e1:SetOperation(s.op1)
 	c:RegisterEffect(e1,false,REGISTER_FLAG_DETACH_XMAT)
-	--handes
+	--Send 1 random card from the hand to the GY
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,2))
 	e2:SetCategory(CATEGORY_TOGRAVE)
@@ -28,7 +29,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.tg2)
 	e2:SetOperation(s.op2)
 	c:RegisterEffect(e2,false,REGISTER_FLAG_DETACH_XMAT)
-	--remove
+	--Banish 1 card from the opponent's GY
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,3))
 	e3:SetCategory(CATEGORY_REMOVE)
@@ -51,11 +52,11 @@ function s.tg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
 	local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,#g,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,tp,LOCATION_ONFIELD)
 end
 function s.op1(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) and tc:IsControler(1-tp)then
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
@@ -81,7 +82,7 @@ function s.tg3(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 function s.op3(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) then
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end

@@ -2,10 +2,10 @@
 --Number 6: Chronomaly Atlandis
 local s,id=GetID()
 function s.initial_effect(c)
-	--xyz summon
+	--Xyz Summon
 	Xyz.AddProcedure(c,nil,6,2)
 	c:EnableReviveLimit()
-	--equip
+	--Equip 1 "Number" monster to itself
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_LEAVE_GRAVE+CATEGORY_EQUIP)
@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetOperation(s.eqop)
 	c:RegisterEffect(e1)
 	aux.AddEREquipLimit(c,nil,s.eqval,s.equipop,e1)
-	--lp
+	--Halve the opponent's LP
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -44,27 +44,27 @@ function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
-	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,tp,0)
+	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,1,tp,0)
 end
 function s.equipop(c,e,tp,tc)
 	if not aux.EquipByEffectAndLimitRegister(c,e,tp,tc,id) then return end
 	local atk=tc:GetBaseAttack()/2
 	if atk>0 then
-		local e2=Effect.CreateEffect(c)
-		e2:SetType(EFFECT_TYPE_EQUIP)
-		e2:SetProperty(EFFECT_FLAG_OWNER_RELATE+EFFECT_FLAG_IGNORE_IMMUNE)
-		e2:SetCode(EFFECT_UPDATE_ATTACK)
-		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
-		e2:SetValue(atk)
-		tc:RegisterEffect(e2)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_EQUIP)
+		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE+EFFECT_FLAG_IGNORE_IMMUNE)
+		e1:SetCode(EFFECT_UPDATE_ATTACK)
+		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+		e1:SetValue(atk)
+		tc:RegisterEffect(e1)
 	end
 end
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToEffect(e) then
+	if tc:IsRelateToEffect(e) and tc:IsSetCard(0x48) then
 		s.equipop(c,e,tp,tc)
 	end
 end
